@@ -12,7 +12,7 @@ Backend: [Firebase](https://firebase.google.com) (Firestore өгөгдлийн �
 4. **Project settings (⚙️) → General** хэсэгт доош гүйлгээд "Your apps" дор `</>` (Web) icon дээр дар → апп нэр өгөөд бүртгэ.
 5. Гарч ирэх `firebaseConfig` объектыг хуулж, энэ репо доторх **`firebase-config.js`** файлд байгаа placeholder утгуудын оронд тавь.
 
-## 2. Firestore Security Rules тохируулах (маш чухал!)
+## 3. Firestore Security Rules тохируулах (маш чухал!)
 
 Firebase console → **Firestore Database → Rules** таб руу орж, доорх дүрмийг тавиад **Publish** дар:
 
@@ -45,7 +45,8 @@ service cloud.firestore {
       allow read: if isAdmin() || (request.auth != null && request.auth.uid == uid);
     }
 
-    // admins коллекц — зөвхөн Firebase Console-с гараар засварлана (клиент талаас бичихийг хориглоно)
+    // admins коллекц — клиент код (браузер) огт бичиж болохгүй.
+    // Зөвхөн серверийн Netlify Function (Firebase Admin SDK) л энд бичиж чадна.
     match /admins/{uid} {
       allow read: if request.auth != null && request.auth.uid == uid;
       allow write: if false;
@@ -54,17 +55,38 @@ service cloud.firestore {
 }
 ```
 
-## 3. Өөрийгөө админ болгох
+## 4. Админ нэвтрэлтийг тохируулах (нууц үг + Firebase Admin SDK)
 
-1. Сайтаа нээгээд **"Бүртгүүлэх"** хуудсаар энгийн хэрэглэгчийн бүртгэл үүсгэ (өөрийн имэйл, нууц үгээрээ).
-2. Firebase console → **Authentication → Users** таб руу ор → шинээр үүссэн хэрэглэгчийнхээ **User UID**-г хуул.
-3. Firebase console → **Firestore Database → Data** → **Start collection** дараад коллекцийн нэрийг `admins` гэж бич.
-4. Document ID талбарт дээрх UID-г буулгаад, дурын нэг талбар нэм (жишээ нь `addedAt: true`) → **Save**.
-5. Одоо сайтын `#/admin` хуудсаар яг тухайн имэйл, нууц үгээрээ нэвтэрвэл админ панель нээгдэнэ.
+Админ хэсэг рүү орохын тулд ганц нууц үг оруулна — энэ нууц үг **браузерийн код дотор огт байхгүй**, зөвхөн Netlify-н серверийн орчинд (Environment Variables) хадгалагдаж, Netlify Function дотор шалгагдана. Зөв бол функц Firebase-с жинхэнэ, аюулгүй нэвтрэлтийн token үүсгэж өгнө.
 
-> Дараа өөр админ нэмэхдээ мөн адил алхмуудыг давтана — шинэ хэрэглэгч бүртгүүлээд, түүний UID-г `admins` коллекцод нэмнэ.
+### 4.1 Firebase Service Account key авах
 
-## 4. GitHub-д оруулах
+1. Firebase console → ⚙️ **Project settings → Service accounts** таб руу ор.
+2. **Generate new private key** дараад баталгаажуулна уу — `.json` файл татагдана.
+3. Тэр файлыг нээгээд **бүх агуулгыг нь** (нэг том JSON текст) хуул.
+
+### 4.2 Netlify дээр Environment Variables нэмэх
+
+Netlify dashboard → таны site → **Site configuration → Environment variables → Add a variable** дараад доорх 3 хувьсагчийг нэм:
+
+| Key | Value |
+|---|---|
+| `ADMIN_ACCESS_PASSWORD` | Таны сонгосон нууц үг (жишээ нь: `MyStr0ngPass!2026`) |
+| `FIREBASE_SERVICE_ACCOUNT_JSON` | 4.1-д хуулсан бүтэн JSON текст |
+| `ADMIN_UID` | (заавал биш) `site-admin` гэх мэт дурын үг — өгөхгүй бол автоматаар `site-admin` болно |
+
+Хадгалсны дараа **Deploys → Trigger deploy → Clear cache and deploy site** дараад шинэ хувьсагчаа идэвхжүүл.
+
+### 4.3 Шалгах
+
+1. Deploy дуусмагц сайтынхаа `https://<таны-домэйн>/#/admin` хаягаар орж үзнэ (энэ линк цэсэнд байхгүй тул зөвхөн та мэднэ).
+2. `ADMIN_ACCESS_PASSWORD`-оор өгсөн нууц үгээ оруулаад **Нэвтрэх** дар.
+3. Админ панель нээгдвэл боллоо. Firestore-ийн `admins` коллекцод автоматаар шаардлагатай баримт бичиг үүснэ — та Firebase console-руу орж юу ч гараар хийх шаардлагагүй.
+
+> **Аюулгүй байдлын тухай:** Энэ архитектур нь нууц үгийг зөвхөн серверийн (Netlify Function) орчинд шалгадаг тул хэн ч browser-ийн DevTools эсвэл кодоос нууц үгийг харах боломжгүй. Гэхдээ нууц үгээ хэн нэгэнтэй хуваалцахгүй, хангалттай урт, давтагдашгүй сонгохыг зөвлөж байна.
+
+
+## 5. GitHub-д оруулах
 
 ```bash
 git init
@@ -75,22 +97,26 @@ git remote add origin https://github.com/<таны-нэр>/<репо-нэр>.git
 git push -u origin main
 ```
 
-## 5. Netlify дээр байршуулах
+## 6. Netlify дээр байршуулах
 
 1. https://app.netlify.com → **Add new site → Import an existing project → GitHub** сонгоод дээрх репог холбо.
-2. Build command: **хоосон үлдээ** (build алхам хэрэггүй).
-3. Publish directory: **`/`** (эсвэл энэ репог хаана байршуулснаас хамааран тухайн фолдер).
-4. **Deploy site** дар — түр хүлээгээд линк дээрээ нээгдэнэ.
+2. Build command: **хоосон үлдээ** (Netlify функцийн dependency-г `package.json`-с автоматаар суулгана).
+3. Publish directory: **`.`** (root).
+4. **Deploy site** дар.
+5. Deploy дууссаны дараа заавал **4-р алхмын Environment Variables**-аа нэмээд дахин deploy хийхээ бүү март (env var нэмэхэд Netlify автоматаар дахин deploy хийдэггүй тохиолдол бий тул "Clear cache and deploy site" ашиглаарай).
 
 Дараа нь домэйн нэрээ холбохыг хүсвэл Netlify-н **Domain settings** хэсгээс хийж болно.
 
 ## Файлын бүтэц
 
 ```
-index.html          — бүх хуудасны HTML skeleton, роутер энд ачаалагдана
-style.css            — бүх загвар (өнгө, layout, responsive)
-firebase-config.js   — Firebase төслийн тохиргоо (энд өөрийн key-гээ тавина)
-app.js               — бүх логик: каталог, сагс, захиалга, нэвтрэлт, админ панель
+index.html                      — бүх хуудасны HTML skeleton, роутер энд ачаалагдана
+style.css                       — бүх загвар (өнгө, layout, responsive)
+firebase-config.js              — Firebase-ийн (нийтэд ил, нууц биш) вэб тохиргоо
+app.js                          — бүх логик: каталог, сагс, захиалга, нэвтрэлт, админ панель
+package.json                    — Netlify Function-ий firebase-admin dependency
+netlify.toml                    — Netlify-д functions хаана байгааг заана
+netlify/functions/admin-login.js — админ нууц үгийг серверийн талд шалгадаг функц
 ```
 
 ## Ирээдүйд нэмж болох зүйлс

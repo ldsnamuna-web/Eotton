@@ -10,12 +10,12 @@
 */
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBYJtM86sAhR-JBUVrF-1yDP7X-8nRN4Qg",
-  authDomain: "eotton-af585.firebaseapp.com",
-  projectId: "eotton-af585",
-  storageBucket: "eotton-af585.firebasestorage.app",
-  messagingSenderId: "1041295939382",
-  appId: "1:1041295939382:web:56d75d62feefa024330597"
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
 };
 
 firebase.initializeApp(firebaseConfig);

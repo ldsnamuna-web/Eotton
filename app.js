@@ -812,35 +812,41 @@ function renderAdminLogin(){
       <div class="wrap">
         <div class="auth-card">
           <h2>Админ нэвтрэх</h2>
-          <div class="sub">Firebase-д бүртгэлтэй, "admins" коллекцод нэмэгдсэн бүртгэлээрээ нэвтэрнэ үү.</div>
+          <div class="sub">Энэ хэсэг зөвхөн дэлгүүрийн эзэнд зориулагдсан хязгаарлагдмал хэсэг.</div>
           <div id="adminMsg"></div>
-          <div class="field"><label>Имэйл</label><input id="adminEmail" type="email" placeholder="admin@eotton.mn"></div>
-          <div class="field"><label>Нууц үг</label><input id="adminPass" type="password" placeholder="••••••••"></div>
+          <div class="field"><label>Нууц үг</label><input id="adminPass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter'){doAdminLogin();}"></div>
           <button class="btn-primary" style="width:100%;" id="adminLoginBtn" onclick="doAdminLogin()">Нэвтрэх</button>
-          <p style="font-size:11.5px; color:var(--ink-soft); margin-top:16px;">Админ эрх авах заавар README.md файлд байгаа.</p>
         </div>
       </div>
     </section>`;
+  const passField = document.getElementById('adminPass');
+  if(passField) passField.focus();
 }
 async function doAdminLogin(){
-  const email = document.getElementById('adminEmail').value.trim();
   const pass = document.getElementById('adminPass').value;
   const msgEl = document.getElementById('adminMsg');
   const btn = document.getElementById('adminLoginBtn');
+  if(!pass){ msgEl.innerHTML = `<div class="form-msg err">Нууц үгээ оруулна уу.</div>`; return; }
   btn.disabled = true; btn.textContent = 'Шалгаж байна...';
   try{
-    await auth.signInWithEmailAndPassword(email, pass);
-    const admin = await checkIsAdmin(auth.currentUser.uid);
-    if(!admin){
-      await auth.signOut();
-      msgEl.innerHTML = `<div class="form-msg err">Энэ бүртгэл админ эрхгүй байна. README.md-г үзнэ үү.</div>`;
+    const res = await fetch('/.netlify/functions/admin-login', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({password: pass})
+    });
+    const data = await res.json();
+    if(!data.ok){
+      msgEl.innerHTML = `<div class="form-msg err">${data.error || 'Нууц үг буруу байна.'}</div>`;
       btn.disabled = false; btn.textContent = 'Нэвтрэх';
       return;
     }
+    await auth.signInWithCustomToken(data.token);
     IS_ADMIN = true;
+    flashToast('Тавтай морил!');
     go('#/admin/dashboard');
   }catch(e){
-    msgEl.innerHTML = `<div class="form-msg err">Имэйл эсвэл нууц үг буруу байна.</div>`;
+    console.error(e);
+    msgEl.innerHTML = `<div class="form-msg err">Холболтын алдаа гарлаа. Дахин оролдоно уу.</div>`;
     btn.disabled = false; btn.textContent = 'Нэвтрэх';
   }
 }

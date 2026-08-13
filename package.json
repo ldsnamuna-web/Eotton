@@ -1,0 +1,9 @@
+{
+  "name": "eotton-site",
+  "private": true,
+  "version": "1.0.0",
+  "description": "eotton mongolia — органик хөвөн хүүхдийн хувцасны онлайн дэлгүүр",
+  "dependencies": {
+    "firebase-admin": "^12.1.0"
+  }
+}
