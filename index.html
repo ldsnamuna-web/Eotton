@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>eotton mongolia — Органик хөвөн хүүхдийн хувцас</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site">
+  <div class="nav-row">
+    <a href="#/" class="logo">eotton</a>
+    <button class="burger" id="burgerBtn">☰</button>
+    <nav class="main-links" id="mainNav">
+      <a href="#/catalog" data-route="catalog">Бүтээгдэхүүн</a>
+      <a href="#/about" data-route="about">Бидний тухай</a>
+      <a href="#/blog" data-route="blog">Блог</a>
+      <a href="#/faq" data-route="faq">FAQ</a>
+      <a href="#/admin" data-route="admin">Админ</a>
+    </nav>
+    <div class="nav-actions">
+      <div class="search-box">
+        <button onclick="doSearch()">🔍</button>
+        <input id="searchInput" placeholder="Хайх..." onkeydown="if(event.key==='Enter')doSearch()">
+      </div>
+      <a class="icon-btn" id="accountIcon" href="#/account" title="Бүртгэл">👤</a>
+      <a class="icon-btn" href="#/cart" title="Сагс">
+        🛍️<span class="cart-badge" id="cartBadge">0</span>
+      </a>
+    </div>
+  </div>
+</header>
+
+<main id="app"></main>
+
+<footer class="site">
+  <div class="wrap foot-grid">
+    <div>
+      <div class="foot-brand">eotton <span style="font-style:normal; font-size:12px; color:#9C9683;">MONGOLIA</span></div>
+      <p>Бяцхан үрсэд зориулсан 100% органик хөвөн хувцас. Зөөлөн, аюулгүй, байгальд ээлтэй.</p>
+    </div>
+    <div>
+      <h4>Цэс</h4>
+      <a href="#/catalog">Бүтээгдэхүүн</a><br>
+      <a href="#/about">Бидний тухай</a><br>
+      <a href="#/blog">Блог</a><br>
+      <a href="#/faq">Асуулт хариулт</a>
+    </div>
+    <div>
+      <h4>Тусламж</h4>
+      <a href="#/faq">Хэмжээ сонгох</a><br>
+      <a href="#/faq">Хүргэлт</a><br>
+      <a href="#/faq">Төлбөр</a><br>
+      <a href="#/faq">Буцаалт</a>
+    </div>
+    <div>
+      <h4>Холбоо барих</h4>
+      <p>📞 +976 0000 0000</p>
+      <p>✉️ orders@eotton.mn</p>
+      <p><a href="https://instagram.com" target="_blank">📷 Instagram</a></p>
+      <p><a href="https://facebook.com" target="_blank">👍 Facebook</a></p>
+    </div>
+  </div>
+  <div class="foot-bottom">© 2026 eotton mongolia. Бүх эрх хуулиар хамгаалагдсан.</div>
+</footer>
+
+<!-- Firebase SDK (compat, no build step needed) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
